@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ΠΡΩΤΟΚΟΛΛΟ ΑΛΛΗΛΟΓΡΑΦΙΑΣ</title>
+</head>
+<body style="font-family:Arial;max-width:800px;margin:auto;padding:20px">
+
+<h2 style="text-align:center">ΠΡΩΤΟΚΟΛΛΟ ΑΛΛΗΛΟΓΡΑΦΙΑΣ</h2>
+
+<div style="margin-bottom:10px">
+  <b>Επόμενος διαθέσιμος αριθμός:</b>
+  <span id="next" style="color:red;font-weight:bold">-</span>
+</div>
+
+<div style="border:1px solid #ddd;padding:10px;border-radius:6px">
+  <div><input id="num" placeholder="Αριθμός πρωτοκόλλου" style="width:100%;padding:8px"></div><br>
+  <div><input id="to" placeholder="Αρχή" style="width:100%;padding:8px"></div><br>
+  <div><textarea id="sum" placeholder="Περίληψη" style="width:100%;padding:8px" rows="3"></textarea></div><br>
+  <button onclick="save()" style="padding:10px 14px">Καταχώρηση</button>
+</div>
+
+<hr>
+
+<table border="1" width="100%" cellpadding="6">
+<thead>
+<tr><th>Αρ.</th><th>Αρχή</th><th>Περίληψη</th></tr>
+</thead>
+<tbody id="t"></tbody>
+</table>
+
+<script>
+async function load(){
+  const n = await fetch("/next-protocol").then(r=>r.json());
+  document.getElementById("next").innerText = n.next;
+
+  const list = await fetch("/list-protocols").then(r=>r.json());
+  const t = document.getElementById("t");
+  t.innerHTML="";
+  list.forEach(p=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${p.number||""}</td><td>${p.to||""}</td><td>${p.summary||""}</td>`;
+    t.appendChild(tr);
+  });
+}
+
+async function save(){
+  await fetch("/new-protocol",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      number:document.getElementById("num").value,
+      to:document.getElementById("to").value,
+      summary:document.getElementById("sum").value
+    })
+  });
+
+  document.getElementById("num").value="";
+  document.getElementById("to").value="";
+  document.getElementById("sum").value="";
+  load();
+}
+load();
+</script>
+
+</body>
+</html>
